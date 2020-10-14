@@ -34,7 +34,12 @@ pipeline {
     stage ('SAST') {
       steps {
         withSonarQubeEnv('sonar') {
-          sh 'mvn sonar:sonar'
+          sh """
+             mvn sonar:sonar \
+             -Dsonar.projectKey=webapp \
+             -Dsonar.host.url=http://35.223.90.104:9000 \
+             -Dsonar.login=859300e7e2a95341f963e1b28b16358e27cc7c14
+             """
           sh 'cat target/sonar/report-task.txt'
         }
       }

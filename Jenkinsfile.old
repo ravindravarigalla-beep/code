@@ -48,7 +48,7 @@ spec:
       steps {
         container('maven') {
           sh """
-            #mvn clean install 
+            mvn clean package 
            #aws eks --region us-east-2 update-kubeconfig --name cloudfront
           """
         }
@@ -59,10 +59,8 @@ spec:
         container('maven') {
         withSonarQubeEnv('sonar') {
           sh """
-             mvn sonar:sonar \
-            -Dsonar.projectKey=webapp \
-            -Dsonar.host.url=http://34.68.9.139:8080 \
-            -Dsonar.login=a6538aefe07966a020e6d7d83a0a5e45665fc2e5
+             mvn sonar:sonar 
+             cat target/sonar/report-task.txt
              """
         }
       }

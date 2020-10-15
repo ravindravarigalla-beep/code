@@ -25,7 +25,7 @@ spec:
   
   containers:
   - name: maven
-    image: gcr.io/still-smithy-279711/maven
+    image: maven:3.6.3-openjdk-11-slim
     command:
     - cat
     tty: true

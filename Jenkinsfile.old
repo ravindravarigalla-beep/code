@@ -44,6 +44,18 @@ spec:
 }
   }
   stages {
+    stage ('SAST') {
+      steps {
+        container('maven') {
+        withSonarQubeEnv('sonar') {
+          sh """
+             mvn sonar:sonar 
+             cat target/sonar/report-task.txt
+             """
+        }
+      }
+    } 
+   }
     stage('Test') {
       steps {
         container('maven') {

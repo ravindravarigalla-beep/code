@@ -39,8 +39,7 @@ pipeline {
              mvn sonar:sonar \
             -Dsonar.projectKey=webapp \
             -Dsonar.host.url=http://34.68.9.139:8080 \
-            -Dsonar.login=admin
-            -Dsonar.password=admin
+            -Dsonar.login=cd4b431a47bef1adae6a790047680d47f88bdeeb
              """
           sh 'cat target/sonar/report-task.txt'
         }

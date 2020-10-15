@@ -54,6 +54,14 @@ spec:
         }
       }
     }
+    stage ('SAST') {
+      steps {
+        withSonarQubeEnv('sonar') {
+          sh 'mvn sonar:sonar'
+          sh 'cat target/sonar/report-task.txt'
+        }
+      }
+    }    
     stage('Build and push image with Container Builder') {
       steps {
         container('gcloud') {

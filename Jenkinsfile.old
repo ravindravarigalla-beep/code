@@ -1,21 +1,16 @@
-pipeline {
-
-  environment {
-    PROJECT = "	still-smithy-279711"
-    APP_NAME = "sample"
+environment {
+    PROJECT = "halodoc-fisclouds"
+    APP_NAME = "catalog"
     FE_SVC_NAME = "${APP_NAME}"
-    CLUSTER = "cluster-1"
+    CLUSTER = "gke-cicd"
     CLUSTER_ZONE = "us-central1-c"
-    IMAGE_TAG = "gcr.io/${PROJECT}/${APP_NAME}:latest"
+    IMAGE_TAG = "us.gcr.io/${PROJECT}/${APP_NAME}:latest"
     JENKINS_CRED = "${PROJECT}"
   }
 
   agent {
     kubernetes {
-  tools {
-    maven 'Maven'
-  }
-      
+      label 'maventest'
       defaultContainer 'jnlp'
       yaml """
 apiVersion: v1
@@ -27,8 +22,8 @@ spec:
   # Use service account that can deploy to all namespaces
   
   containers:
-  - name: aws
-    image: amazon/aws-cli:latest
+  - name: maven
+    image:  gcr.io/still-smithy-279711/maven    
     command:
     - cat
     tty: true
@@ -42,44 +37,49 @@ spec:
     command:
     - cat
     tty: true
-    
 """
 }
   }
   stages {
-    stage('Test') {
+    stage('build') {
       steps {
+        container('maven') {
           sh """
             mvn clean install -DskipTests
-           #aws eks --region us-east-2 update-kubeconfig --name cloudfront
+            mvn sonar:sonar \
+            -Dsonar.projectKey=webapp \
+            -Dsonar.host.url=http://34.68.9.139:8080 \
+            -Dsonar.login=a6538aefe07966a020e6d7d83a0a5e45665fc2e5
           """
         }
       }
-     stage ('SAST') {
+    }
+    stage('Build and push image with Container Builder') {
       steps {
-        withSonarQubeEnv('sonar') {
-          sh """
-          mvn sonar:sonar \
-             -Dsonar.projectKey=webapp \
-             -Dsonar.host.url=http://34.68.9.139:8080 \
-             -Dsonar.login=a6538aefe07966a020e6d7d83a0a5e45665fc2e5
-             """
-          sh 'cat target/sonar/report-task.txt'
+        container('gcloud') {
+          sh "cp $workspace/target/timor-cms-1.0.100-SNAPSHOT.jar ./timor-cms-1.0.100-SNAPSHOT.jar"
+          sh "gsutil cp -r $workspace/target/timor-cms-1.0.100-SNAPSHOT.jar gs://halodoc-databases/artifacts/timor-cms-1.0.100-SNAPSHOT.jar" 
+          sh "PYTHONUNBUFFERED=1 gcloud builds submit -t ${IMAGE_TAG} ." 
         }
-      }
+      } 
     }
     stage('Deploy ') {
       steps {
         container('helm') {
           sh """
+          gcloud container clusters get-credentials gke-apps --zone us-central1-c --project halodoc-fisclouds
           #helm ls
-          #aws eks --region us-east-2 update-kubeconfig --name cloudfront
-          #helm repo add stable https://kubernetes-charts.storage.googleapis.com/ 
-          #helm repo update 
-          #helm install nginx nginx/ 
+         #kubectl get pods --namespace default
+          helm repo add stable https://kubernetes-charts.storage.googleapis.com/ 
+          helm repo update  
+          helm upgrade --install catalog helm/catalog/ --namespace default
+          helm ls
+          #kubectl apply -f kubectl/deployment.yaml --namespace default
+          #kubectl get pods --namespace default
+
           """ 
         }
       }
     }
   }
-}
+ }

@@ -38,8 +38,8 @@ pipeline {
           sh """
              mvn sonar:sonar \
             -Dsonar.projectKey=new \
-            -Dsonar.host.url=http://35.184.160.108:9000 \
-            -Dsonar.login=d1504fde738c78026a2607be791d1594af59e45d
+            -Dsonar.host.url=http://34.67.245.110:9000 \
+            -Dsonar.login=5779bdc42f8fb40132e259c99ce53285a7c37344
              """
           sh 'cat target/sonar/report-task.txt'
         }

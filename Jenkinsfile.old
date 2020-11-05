@@ -37,9 +37,9 @@ pipeline {
         withSonarQubeEnv('sonar') {
           sh """
             mvn sonar:sonar \
-           -Dsonar.projectKey=testing \
+           -Dsonar.projectKey=webapp \
            -Dsonar.host.url=http://35.239.36.86:9000 \
-           -Dsonar.login=10a603f6f4ac9eca1c7d03943057ced680a299b2
+           -Dsonar.login=a49c9b2a02f13d1029c91069b4d46e3bf0e5e5ff
              """
           sh 'cat target/sonar/report-task.txt'
         }
